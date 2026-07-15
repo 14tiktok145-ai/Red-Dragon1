@@ -3,37 +3,27 @@ const pino = require('pino');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 10000; // اتأكد إن البورت هو نفسه اللي ظهر في الـ Logs
 
-app.get('/', (req, res) => res.send('Bot is running!'));
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+app.get('/', (req, res) => res.send('Bot is active!'));
+app.listen(process.env.PORT || 10000);
 
 async function startBot() {
-    console.log("جاري تشغيل البوت...");
+    console.log("جاري محاولة الاتصال...");
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
-    
     const sock = makeWASocket({
         logger: pino({ level: 'silent' }),
-        auth: state,
-        printQRInTerminal: true // السطر ده مهم جداً عشان يطبع الكود
+        auth: state
     });
 
     sock.ev.on('creds.update', saveCreds);
     sock.ev.on('connection.update', (update) => {
-        const { connection, qr } = update;
+        const { qr, connection } = update;
         if (qr) {
-            console.log('--- QR CODE ---');
+            console.log('--- ظهر الـ QR كود في الـ Terminal أدناه ---');
             qrcode.generate(qr, { small: true });
         }
-        if (connection === 'open') {
-            console.log('تم الاتصال بالواتساب بنجاح!');
-        }
-        if (connection === 'close') {
-            console.log('الاتصال انقطع، جاري إعادة المحاولة...');
-            startBot(); // يعيد التشغيل لو فصل
-        }
+        if (connection === 'open') console.log('تم الاتصال بالواتساب!');
     });
 }
 
-// تأكد إن الدالة دي بتتنادى فعلاً
 startBot();
