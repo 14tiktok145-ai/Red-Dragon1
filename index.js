@@ -1,6 +1,13 @@
 const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const qrcode = require('qrcode-terminal');
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// ده الجزء اللي بيخلي السيرفر يفضل شغال 24 ساعة
+app.get('/', (req, res) => res.send('Bot is running!'));
+app.listen(port, () => console.log(`Server listening on port ${port}`));
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
@@ -22,4 +29,3 @@ async function startBot() {
     });
 }
 startBot();
-
